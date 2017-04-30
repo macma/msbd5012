@@ -157,11 +157,18 @@ class MLP(object):
             n_out=n_hidden,
             activation=T.tanh
         )
+        self.hiddenLayer2 = HiddenLayer(
+            rng=rng,
+            input=self.hiddenLayer.output,
+            n_in=n_hidden,
+            n_out=n_hidden,
+            activation=T.tanh
+        )
 
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
         self.logRegressionLayer = LogisticRegression(
-            input=self.hiddenLayer.output,
+            input=self.hiddenLayer2.output,
             n_in=n_hidden,
             n_out=n_out
         )
@@ -170,6 +177,7 @@ class MLP(object):
         # be small
         self.L1 = (
             abs(self.hiddenLayer.W).sum()
+            + abs(self.hiddenLayer2.W).sum()
             + abs(self.logRegressionLayer.W).sum()
         )
 
@@ -177,6 +185,7 @@ class MLP(object):
         # square of L2 norm to be small
         self.L2_sqr = (
             (self.hiddenLayer.W ** 2).sum()
+            + (self.hiddenLayer2.W ** 2).sum()
             + (self.logRegressionLayer.W ** 2).sum()
         )
 
@@ -191,7 +200,7 @@ class MLP(object):
 
         # the parameters of the model are the parameters of the two layer it is
         # made out of
-        self.params = self.hiddenLayer.params + self.logRegressionLayer.params
+        self.params = self.hiddenLayer.params + self.hiddenLayer2.params + self.logRegressionLayer.params
         # end-snippet-3
 
         # keep track of model input
@@ -247,7 +256,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100,
     index = T.lscalar()  # index to a [mini]batch
     x = T.matrix('x')  # the data is presented as rasterized images
     y = T.ivector('y')  # the labels are presented as 1D vector of
-                        # [int] labels
+    # [int] labels
 
     rng = numpy.random.RandomState(1234)
 
@@ -330,14 +339,14 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100,
     # early-stopping parameters
     patience = 10000  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is
-                           # found
+    # found
     improvement_threshold = 0.995  # a relative improvement of this much is
-                                   # considered significant
+    # considered significant
     validation_frequency = min(n_train_batches, patience // 2)
-                                  # go through this many
-                                  # minibatche before checking the network
-                                  # on the validation set; in this case we
-                                  # check every epoch
+    # go through this many
+    # minibatche before checking the network
+    # on the validation set; in this case we
+    # check every epoch
 
     best_validation_loss = numpy.inf
     best_iter = 0
@@ -373,7 +382,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100,
 
                 # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
-                    #improve patience if loss improvement is good enough
+                    # improve patience if loss improvement is good enough
                     if (
                         this_validation_loss < best_validation_loss *
                         improvement_threshold
