@@ -157,18 +157,10 @@ class MLP(object):
             n_out=n_hidden,
             activation=T.tanh
         )
-        self.hiddenLayer2 = HiddenLayer(
-            rng=rng,
-            input=self.hiddenLayer.output,
-            n_in=n_hidden,
-            n_out=n_hidden,
-            activation=T.tanh
-        )
-
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
         self.logRegressionLayer = LogisticRegression(
-            input=self.hiddenLayer2.output,
+            input=self.hiddenLayer.output,
             n_in=n_hidden,
             n_out=n_out
         )
@@ -177,7 +169,6 @@ class MLP(object):
         # be small
         self.L1 = (
             abs(self.hiddenLayer.W).sum()
-            + abs(self.hiddenLayer2.W).sum()
             + abs(self.logRegressionLayer.W).sum()
         )
 
@@ -185,7 +176,6 @@ class MLP(object):
         # square of L2 norm to be small
         self.L2_sqr = (
             (self.hiddenLayer.W ** 2).sum()
-            + (self.hiddenLayer2.W ** 2).sum()
             + (self.logRegressionLayer.W ** 2).sum()
         )
 
@@ -200,7 +190,7 @@ class MLP(object):
 
         # the parameters of the model are the parameters of the two layer it is
         # made out of
-        self.params = self.hiddenLayer.params + self.hiddenLayer2.params + self.logRegressionLayer.params
+        self.params = self.hiddenLayer.params + self.logRegressionLayer.params
         # end-snippet-3
 
         # keep track of model input
@@ -208,7 +198,7 @@ class MLP(object):
 
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100,
-             dataset='mnist.pkl.gz', batch_size=20, n_hidden=200):
+             dataset='mnist.pkl.gz', batch_size=20, n_hidden=400):
     """
     Demonstrate stochastic gradient descent optimization for a multilayer
     perceptron
